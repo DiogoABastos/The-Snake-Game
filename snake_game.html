@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Snake</title>
+  <style>
+    body{
+          background: #202028;
+          color: #fff;
+          font-family: sans-serif;
+          font-size: 2em;
+          text-align: center;
+        }
+    canvas{
+      border: solid .2em #fff;
+      height: 90vh;
+        }
+
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="320" height="480"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let moving = false;
+
+    const randomNumber = (min, max, num) => {
+      return Math.floor((Math.random() * (max - min + 1) + min) / num) * num;
+    }
+
+    const mousePos = (canvas, e) => {
+      let rect = canvas.getBoundingClientRect();
+      let scaleX = canvas.width / rect.width;
+      let scaleY = canvas.height / rect.height;
+      return {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY
+          }
+    }
+
+
+    const changeDirection = (e) => {
+      const left = 37;
+      const up = 38;
+      const right = 39;
+      const down = 40;
+      if (!moving) {
+        if (e.keyCode === up && snake.dy !== 10) {
+          snake.dx = 0;
+          snake.dy = -10;
+        }
+        if (e.keyCode === down && snake.dy !== -10) {
+          snake.dx = 0;
+          snake.dy = 10;
+        }
+        if (e.keyCode === left && snake.dx !== 10) {
+          snake.dx = -10;
+          snake.dy = 0;
+        }
+        if (e.keyCode === right && snake.dx !== -10) {
+          snake.dx = 10;
+          snake.dy = 0;
+        }
+      }
+      moving = true;
+    }
+
+    const changeState = (e) => {
+      let position = mousePos(canvas, e);
+
+      if (position.x > buttons.x && position.x < buttons.x + buttons.w && position.y > buttons.y && position.y < buttons.y + buttons.h) {
+        if (gameState.current === gameState.start) {
+          gameState.current = gameState.game;
+        } else if (gameState.current === gameState.end) {
+          snake.restart();
+          food.restart();
+          score.restart();
+          gameState.current = gameState.start;
+        }
+      }
+    }
+
+    const changeDirectionPhone = (e) => {
+      let position = mousePos(canvas, e);
+
+      if (!moving) {
+        if ((position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) && snake.dy !== 10) {
+          snake.dx = 0;
+          snake.dy = -10;
+        }
+        if ((position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) && snake.dy !== -10) {
+          snake.dx = 0;
+          snake.dy = 10;
+        }
+        if ((position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) && snake.dx !== 10) {
+          snake.dx = -10;
+          snake.dy = 0;
+        }
+        if ((position.x > hArrow.x + hArrow.w / 2 && position.x < hArrow.x + hArrow.w && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) && snake.dx !== -10) {
+          snake.dx = 10;
+          snake.dy = 0;
+        }
+      }
+    }
+
+    window.addEventListener('keydown', changeDirection);
+    canvas.addEventListener('click', changeState);
+    canvas.addEventListener('click', changeDirectionPhone);
+
+    const clearBg = {
+      x: 0,
+      y: 0,
+      w: canvas.width,
+      h: canvas.height,
+
+      draw() {
+        ctx.fillStyle = 'green';
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+      }
+    }
+
+    const gameState = {
+      current: 0,
+      start: 0,
+      game: 1,
+      end: 2
+    }
+
+    const background = {
+      base: {
+        x: 0,
+        y: 250,
+        w: canvas.width,
+        h: canvas.height - 250,
+      },
+
+      left: {
+        x: 0,
+        y: 0,
+        w: 20,
+        h: 300
+      },
+
+      right: {
+        x: canvas.width - 20,
+        y: 0,
+        w: 20,
+        h: 300
+      },
+
+      top: {
+        x: 0,
+        y: 0,
+        w: canvas.width,
+        h: 30
+      },
+
+      draw() {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(this.base.x, this.base.y, this.base.w, this.base.h);
+        ctx.fillRect(this.left.x, this.left.y, this.left.w, this.left.h);
+        ctx.fillRect(this.right.x, this.right.y, this.right.w, this.right.h);
+        ctx.fillRect(this.top.x, this.top.y, this.top.w, this.top.h);
+      }
+    }
+
+    const getReady = {
+      x: 150,
+      y: 150,
+
+      draw() {
+        if (gameState.current === gameState.start) {
+          ctx.fillStyle = "black";
+          ctx.font = '10px Arial';
+          ctx.fillText('Get Ready', this.x, this.y);
+        }
+      }
+    }
+
+    const gameOver = {
+      x: 150,
+      y: 150,
+
+      draw() {
+        if (gameState.current === gameState.end) {
+          ctx.fillStyle = "black";
+          ctx.font = '10px Arial';
+          ctx.fillText('Game Over', this.x, this.y);
+        }
+      }
+    }
+
+    const button = {
+      x: 220,
+      y: 350,
+      r: 50,
+
+      draw() {
+        ctx.fillStyle = 'grey';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    }
+
+    const vArrow = {
+      x: 212,
+      y: 310,
+      w: 20,
+      h: 80,
+
+      draw() {
+        ctx.fillStyle = 'darkgrey';
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+      }
+    }
+
+    const hArrow = {
+      x: 182,
+      y: 340,
+      w: 80,
+      h: 20,
+
+      draw() {
+        ctx.fillStyle = 'darkgrey';
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+      }
+    }
+
+    const buttons = {
+      x: 50,
+      y: 330,
+      w: 70,
+      h: 30,
+
+      draw() {
+        ctx.fillStyle = 'grey';
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+      }
+    }
+
+    const word = {
+      x: 68,
+      y: 350,
+
+      draw() {
+        ctx.font = '15px Arial';
+        ctx.fillStyle = "lightgrey";
+        ctx.fillText('Start', this.x, this.y);
+      }
+    }
+
+    const score = {
+      current: 0,
+      best: Number.parseInt(localStorage.getItem('oldSnake')) || 0,
+
+      xC: 220,
+      yC: 50,
+
+      xB: 180,
+      yB: 70,
+
+
+      draw() {
+        ctx.font = '15px Arial';
+        ctx.fillStyle = 'black';
+        ctx.fillText(`Score: ${this.current}`, this.xC, this.yC);
+        ctx.fillText(`Highscore: ${this.best}`, this.xB, this.yB);
+      },
+
+      restart() {
+        this.current = 0;
+      }
+    }
+
+    const gameArea = {
+      x: background.left.w,
+      y: background.top.h,
+      w: canvas.width - background.right.w,
+      h: canvas.height - background.base.h
+    }
+
+    const snake = {
+      position: [
+      {x: 150, y: 150},
+      {x: 160, y: 150}
+      ],
+
+      w: 10,
+      h: 10,
+
+      dx: 10,
+      dy: 0,
+
+      update() {
+        if (gameState.current === gameState.game) {
+          const head = {x: this.position[0].x + this.dx, y: this.position[0].y + this.dy};
+          this.position.unshift(head);
+          if (food.x === this.position[0].x && food.y === this.position[0].y) {
+            food.x = randomNumber(background.left.w, background.right.x - 10, 10);
+            food.y = randomNumber(background.top.h, background.base.y - 10, 10);
+            score.current += 10;
+            score.best = Math.max(score.current, score.best);
+            localStorage.setItem('oldSnake', score.best);
+            this.position.forEach((part) => {
+              if (food.x === part.x && food.y === part.y) {
+                food.x = randomNumber(background.left.w, background.right.x - 10, 10);
+                food.y = randomNumber(background.top.h, background.base.y - 10, 10);
+              }
+            });
+
+          } else {
+            this.position.pop();
+          }
+
+          if (this.position[0].x + this.w > gameArea.w) {
+            this.position[0].x = gameArea.x;
+          } else if (this.position[0].x < gameArea.x) {
+            this.position[0].x = gameArea.w - this.w;
+          } else if (this.position[0].y + this.h > gameArea.h) {
+            this.position[0].y = gameArea.y;
+          } else if (this.position[0].y < gameArea.y) {
+            this.position[0].y = gameArea.h -this.h;
+          }
+
+          for (let i = 4; i < this.position.length; i++) {
+            if (this.position[0].x === this.position[i].x && this.position[0].y === this.position[i].y) {
+              gameState.current = gameState.end;
+            }
+          }
+        }
+
+      },
+
+      draw() {
+        ctx.fillStyle = "red";
+        this.position.forEach((part) => {
+        ctx.fillRect(part.x, part.y, this.w - 1, this.h - 1);
+        });
+      },
+
+      restart() {
+        this.position = [
+          {x: 150, y: 150},
+          {x: 160, y: 150}
+          ];
+      }
+    }
+
+    const food = {
+      x: 100,
+      y: 100,
+      w: 10,
+      h: 10,
+
+      draw() {
+        ctx.fillStyle = "blue";
+        ctx.fillRect(this.x, this.y, this.w - 1, this.h - 1);
+      },
+
+      restart() {
+        this.x = 100;
+        this.y = 100;
+      }
+    }
+
+    function update() {
+      snake.update();
+    }
+
+    function draw() {
+      clearBg.draw();
+      background.draw();
+      buttons.draw();
+      word.draw();
+      button.draw();
+      vArrow.draw();
+      hArrow.draw();
+      food.draw();
+      snake.draw();
+      score.draw();
+      getReady.draw();
+      gameOver.draw();
+    }
+
+    function loop() {
+      update();
+      draw();
+      moving = false;
+    }
+
+    setInterval(loop, 100);
+
+  </script>
+</body>
+</html>
