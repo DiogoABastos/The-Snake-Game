@@ -69,9 +69,29 @@
     const changeState = (e) => {
       let position = mousePos(canvas, e);
 
+      // if (position.x > levelDisplay.first.x && position.x < levelDisplay.first.x + levelDisplay.w && position.y > levelDisplay.first.y && position.y < levelDisplay.first.y + levelDisplay.h) {
+      //   if (gameState.current === gameState.layout) {
+      //     gameState.current = gameState.start;
+      //   }
+      // }
+
+      if (position.x > hArrow.x + hArrow.w / 2 && position.x < hArrow.x + hArrow.w && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
+        if (levelDisplay.all()[levelDisplay.current + 1]) {
+          levelDisplay.current += 1;
+        }
+      }
+
+      if (position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
+        if (levelDisplay.all()[levelDisplay.current - 1]) {
+          levelDisplay.current -= 1;
+        }
+      }
+
       if (position.x > buttons.x && position.x < buttons.x + buttons.w && position.y > buttons.y && position.y < buttons.y + buttons.h) {
-        if (gameState.current === gameState.start) {
-          gameState.current = gameState.game;
+        if (gameState.current === gameState.layout) {
+          gameState.current = gameState.start;
+        } else if (gameState.current === gameState.start) {
+          gameState.current = gameState.game.game1;
         } else if (gameState.current === gameState.end) {
           snake.restart();
           food.restart();
@@ -122,9 +142,68 @@
 
     const gameState = {
       current: 0,
-      start: 0,
-      game: 1,
-      end: 2
+      layout: 0,
+      start: 1,
+      game: {
+        all: 2 || 3,
+        game1: 2,
+        game2: 3
+      },
+      end: 4
+    }
+
+    const levelDisplay = {
+      all() {
+        return [this.first, this.second];
+      },
+
+      current: 0,
+
+      first: {
+        id: 0,
+        x: 50,
+        y: 50,
+        tX: 60,
+        tY: 68
+      },
+
+      second: {
+        id: 1,
+        x: 120,
+        y: 50,
+        tX: 130,
+        tY: 68
+      },
+
+      w: 50,
+      h: 30,
+
+      draw() {
+        if (gameState.current === gameState.layout) {
+          ctx.fillStyle = "darkgreen";
+          ctx.strokeStyle = "white";
+          ctx.strokeRect(this.all()[this.current].x, this.all()[this.current].y, this.w, this.h);
+          ctx.fillRect(this.first.x, this.first.y, this.w, this.h);
+          ctx.fillRect(this.second.x, this.second.y, this.w, this.h);
+          ctx.fillStyle = "black";
+          ctx.font = "10px Arial";
+          ctx.fillText("Level 1", this.first.tX, this.first.tY);
+          ctx.fillText("(soon)", this.second.tX, this.second.tY);
+        }
+      }
+    }
+
+    const chooseMessage = {
+      x: 150,
+      y: 100,
+
+      draw() {
+        if (gameState.current === gameState.layout) {
+          ctx.fillStyle = "black";
+          ctx.font = "10px Arial";
+          ctx.fillText("Choose a level", this.x, this.y);
+        }
+      }
     }
 
     const background = {
@@ -182,11 +261,23 @@
       x: 150,
       y: 150,
 
+      layout: {
+        x: 150,
+        y: 180
+      },
+
+      again: {
+        x: 150,
+        y: 200
+      },
+
       draw() {
         if (gameState.current === gameState.end) {
           ctx.fillStyle = "black";
           ctx.font = '10px Arial';
           ctx.fillText('Game Over', this.x, this.y);
+          ctx.fillText('Levels (Up)', this.layout.x, this.layout.y);
+          ctx.fillText('Again (Down)', this.again.x, this.again.y);
         }
       }
     }
@@ -194,7 +285,7 @@
     const button = {
       x: 220,
       y: 350,
-      r: 50,
+      r: 70,
 
       draw() {
         ctx.fillStyle = 'grey';
@@ -205,10 +296,10 @@
     }
 
     const vArrow = {
-      x: 212,
-      y: 310,
-      w: 20,
-      h: 80,
+      x: 205,
+      y: 300,
+      w: 30,
+      h: 100,
 
       draw() {
         ctx.fillStyle = 'darkgrey';
@@ -217,10 +308,10 @@
     }
 
     const hArrow = {
-      x: 182,
-      y: 340,
-      w: 80,
-      h: 20,
+      x: 170,
+      y: 335,
+      w: 100,
+      h: 30,
 
       draw() {
         ctx.fillStyle = 'darkgrey';
@@ -263,10 +354,12 @@
 
 
       draw() {
-        ctx.font = '15px Arial';
-        ctx.fillStyle = 'black';
-        ctx.fillText(`Score: ${this.current}`, this.xC, this.yC);
-        ctx.fillText(`Highscore: ${this.best}`, this.xB, this.yB);
+        if (gameState.current === gameState.game.all || gameState.current === gameState.end) {
+          ctx.font = '15px Arial';
+          ctx.fillStyle = 'black';
+          ctx.fillText(`Score: ${this.current}`, this.xC, this.yC);
+          ctx.fillText(`Highscore: ${this.best}`, this.xB, this.yB);
+        }
       },
 
       restart() {
@@ -294,7 +387,7 @@
       dy: 0,
 
       update() {
-        if (gameState.current === gameState.game) {
+        if (gameState.current === gameState.game.game1) {
           const head = {x: this.position[0].x + this.dx, y: this.position[0].y + this.dy};
           this.position.unshift(head);
           if (food.x === this.position[0].x && food.y === this.position[0].y) {
@@ -377,6 +470,8 @@
       button.draw();
       vArrow.draw();
       hArrow.draw();
+      levelDisplay.draw();
+      chooseMessage.draw();
       food.draw();
       snake.draw();
       score.draw();
