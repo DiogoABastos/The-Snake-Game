@@ -17,6 +17,16 @@ const mousePos = (canvas, e) => {
       }
 }
 
+const touchPos = (canvas, e) => {
+  let rect = canvas.getBoundingClientRect();
+  let scaleX = canvas.width / rect.width;
+  let scaleY = canvas.height / rect.height;
+  return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+      }
+}
+
 
 const changeDirection = (e) => {
   const left = 37;
@@ -45,81 +55,158 @@ const changeDirection = (e) => {
 }
 
 const changeState = (e) => {
-  let position = mousePos(canvas, e);
+  e.preventDefault();
+  if (e.type === 'click') {
+    let position = mousePos(canvas, e);
 
-  // if (position.x > levelDisplay.first.x && position.x < levelDisplay.first.x + levelDisplay.w && position.y > levelDisplay.first.y && position.y < levelDisplay.first.y + levelDisplay.h) {
-  //   if (gameState.current === gameState.layout) {
-  //     gameState.current = gameState.start;
-  //   }
-  // }
-  if (gameState.current === gameState.layout) {
-    if (position.x > hArrow.x + hArrow.w / 2 && position.x < hArrow.x + hArrow.w && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
-      if (levelDisplay.all()[levelDisplay.current + 1]) {
-        levelDisplay.current += 1;
-      }
-    }
-
-    if (position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
-      if (levelDisplay.all()[levelDisplay.current - 1]) {
-        levelDisplay.current -= 1;
-      }
-    }
-  }
-
-  if (position.x > buttons.x && position.x < buttons.x + buttons.w && position.y > buttons.y && position.y < buttons.y + buttons.h) {
+    // if (position.x > levelDisplay.first.x && position.x < levelDisplay.first.x + levelDisplay.w && position.y > levelDisplay.first.y && position.y < levelDisplay.first.y + levelDisplay.h) {
+    //   if (gameState.current === gameState.layout) {
+    //     gameState.current = gameState.start;
+    //   }
+    // }
     if (gameState.current === gameState.layout) {
-      gameState.current = gameState.start;
-    } else if (gameState.current === gameState.start) {
-      gameState.current = gameState.game;
-    } else if (gameState.current === gameState.end) {
-      snake.restart();
-      food.restart();
-      score.restart();
-      gameState.current = gameState.start;
-    }
-  }
+      if (position.x > hArrow.x + hArrow.w / 2 && position.x < hArrow.x + hArrow.w && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
+        if (levelDisplay.all()[levelDisplay.current + 1]) {
+          levelDisplay.current += 1;
+        }
+      }
 
-  if (gameState.current === gameState.end) {
-    if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) {
-      snake.restart();
-      food.restart();
-      score.restart();
-      gameState.current = gameState.start;
-    } else if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) {
-      snake.restart();
-      food.restart();
-      score.restart();
-      gameState.current = gameState.layout;
+      if (position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
+        if (levelDisplay.all()[levelDisplay.current - 1]) {
+          levelDisplay.current -= 1;
+        }
+      }
+    }
+
+    if (position.x > buttons.x && position.x < buttons.x + buttons.w && position.y > buttons.y && position.y < buttons.y + buttons.h) {
+      if (gameState.current === gameState.layout) {
+        gameState.current = gameState.start;
+      } else if (gameState.current === gameState.start) {
+        gameState.current = gameState.game;
+      } else if (gameState.current === gameState.end) {
+        snake.restart();
+        food.restart();
+        score.restart();
+        gameState.current = gameState.start;
+      }
+    }
+
+    if (gameState.current === gameState.end) {
+      if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) {
+        snake.restart();
+        food.restart();
+        score.restart();
+        gameState.current = gameState.start;
+      } else if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) {
+        snake.restart();
+        food.restart();
+        score.restart();
+        gameState.current = gameState.layout;
+      }
+    }
+  } else if (e.type === 'touchstart') {
+   let position = touchPos(canvas, e);
+
+    // if (position.x > levelDisplay.first.x && position.x < levelDisplay.first.x + levelDisplay.w && position.y > levelDisplay.first.y && position.y < levelDisplay.first.y + levelDisplay.h) {
+    //   if (gameState.current === gameState.layout) {
+    //     gameState.current = gameState.start;
+    //   }
+    // }
+    if (gameState.current === gameState.layout) {
+      if (position.x > hArrow.x + hArrow.w / 2 && position.x < hArrow.x + hArrow.w && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
+        if (levelDisplay.all()[levelDisplay.current + 1]) {
+          levelDisplay.current += 1;
+        }
+      }
+
+      if (position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
+        if (levelDisplay.all()[levelDisplay.current - 1]) {
+          levelDisplay.current -= 1;
+        }
+      }
+    }
+
+    if (position.x > buttons.x && position.x < buttons.x + buttons.w && position.y > buttons.y && position.y < buttons.y + buttons.h) {
+      if (gameState.current === gameState.layout) {
+        gameState.current = gameState.start;
+      } else if (gameState.current === gameState.start) {
+        gameState.current = gameState.game;
+      } else if (gameState.current === gameState.end) {
+        snake.restart();
+        food.restart();
+        score.restart();
+        gameState.current = gameState.start;
+      }
+    }
+
+    if (gameState.current === gameState.end) {
+      if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) {
+        snake.restart();
+        food.restart();
+        score.restart();
+        gameState.current = gameState.start;
+      } else if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) {
+        snake.restart();
+        food.restart();
+        score.restart();
+        gameState.current = gameState.layout;
+      }
     }
   }
 }
 
 const changeDirectionPhone = (e) => {
-  let position = mousePos(canvas, e);
+  e.preventDefault();
+  if (e.type === 'click') {
+    let position = mousePos(canvas, e);
 
-  if (!moving) {
-    if ((position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) && snake.dy !== 10) {
-      snake.dx = 0;
-      snake.dy = -10;
+    if (!moving) {
+      if ((position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) && snake.dy !== 10) {
+        snake.dx = 0;
+        snake.dy = -10;
+      }
+      if ((position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) && snake.dy !== -10) {
+        snake.dx = 0;
+        snake.dy = 10;
+      }
+      if ((position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) && snake.dx !== 10) {
+        snake.dx = -10;
+        snake.dy = 0;
+      }
+      if ((position.x > hArrow.x + hArrow.w / 2 && position.x < hArrow.x + hArrow.w && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) && snake.dx !== -10) {
+        snake.dx = 10;
+        snake.dy = 0;
+      }
     }
-    if ((position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) && snake.dy !== -10) {
-      snake.dx = 0;
-      snake.dy = 10;
-    }
-    if ((position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) && snake.dx !== 10) {
-      snake.dx = -10;
-      snake.dy = 0;
-    }
-    if ((position.x > hArrow.x + hArrow.w / 2 && position.x < hArrow.x + hArrow.w && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) && snake.dx !== -10) {
-      snake.dx = 10;
-      snake.dy = 0;
+  } else if (e.type === 'touchstart') {
+   let position = touchPos(canvas, e);
+
+    if (!moving) {
+      if ((position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) && snake.dy !== 10) {
+        snake.dx = 0;
+        snake.dy = -10;
+      }
+      if ((position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) && snake.dy !== -10) {
+        snake.dx = 0;
+        snake.dy = 10;
+      }
+      if ((position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) && snake.dx !== 10) {
+        snake.dx = -10;
+        snake.dy = 0;
+      }
+      if ((position.x > hArrow.x + hArrow.w / 2 && position.x < hArrow.x + hArrow.w && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) && snake.dx !== -10) {
+        snake.dx = 10;
+        snake.dy = 0;
+      }
     }
   }
 }
 
 window.addEventListener('keydown', changeDirection);
 canvas.addEventListener('click', changeState);
+canvas.addEventListener('touchstart', changeState);
 canvas.addEventListener('click', changeDirectionPhone);
+canvas.addEventListener('touchstart', changeDirectionPhone);
 
 const clearBg = {
   x: 0,
@@ -466,6 +553,16 @@ const gameLayouts = {
       if (snake.position[0].x + snake.w > this.third.second.x && snake.position[0].x < this.third.second.x + this.third.second.w && snake.position[0].y + snake.h > this.third.second.y && snake.position[0].y < this.third.second.y + this.third.second.h) {
         gameState.current = gameState.end;
       }
+
+      if (food.x + food.w > this.third.first.x && food.x < this.third.first.x + this.third.first.w && food.y + food.h > this.third.first.y && food.y < this.third.first.y + this.third.first.h) {
+        food.x = randomNumber(background.left.w, background.right.x - 10, 10);
+        food.y = randomNumber(background.top.h, background.base.y - 10, 10);
+      }
+
+      if (food.x + food.w > this.third.second.x && food.x < this.third.second.x + this.third.second.w && food.y + food.h > this.third.second.y && food.y < this.third.second.y + this.third.second.h) {
+        food.x = randomNumber(background.left.w, background.right.x - 10, 10);
+        food.y = randomNumber(background.top.h, background.base.y - 10, 10);
+      }
     }
   },
 
@@ -566,6 +663,15 @@ const food = {
     this.y = randomNumber(background.top.h, background.base.y - 10, 10);
   }
 }
+
+// space invaders
+
+
+
+
+
+
+
 
 function update() {
   snake.update();
