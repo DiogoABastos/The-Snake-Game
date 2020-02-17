@@ -165,7 +165,7 @@
 
     const levelDisplay = {
       all() {
-        return [this.first, this.second];
+        return [this.first, this.second, this.third];
       },
 
       current: 0,
@@ -186,6 +186,14 @@
         tY: 68
       },
 
+      third: {
+        id: 2,
+        x: 190,
+        y: 50,
+        tX: 200,
+        tY: 68
+      },
+
       w: 50,
       h: 30,
 
@@ -197,10 +205,12 @@
           ctx.strokeRect(this.all()[this.current].x, this.all()[this.current].y, this.w, this.h);
           ctx.fillRect(this.first.x, this.first.y, this.w, this.h);
           ctx.fillRect(this.second.x, this.second.y, this.w, this.h);
+          ctx.fillRect(this.third.x, this.third.y, this.w, this.h);
           ctx.fillStyle = "black";
           ctx.font = "10px Arial";
           ctx.fillText("Level 1", this.first.tX, this.first.tY);
           ctx.fillText("Level 2", this.second.tX, this.second.tY);
+          ctx.fillText("Level 3", this.third.tX, this.third.tY);
         }
       }
     }
@@ -378,8 +388,15 @@
         best: Number.parseInt(localStorage.getItem('oldSnakeLvl2')) || 0
       },
 
+      third: {
+        id: 2,
+        name: "oldSnakeLvl3",
+        current: 0,
+        best: Number.parseInt(localStorage.getItem('oldSnakeLvl3')) || 0
+      },
+
       all() {
-        return [this.first.id, this.second.id];
+        return [this.first.id, this.second.id, this.third.id];
       },
 
       active() {
@@ -387,6 +404,8 @@
           return this.first;
         } else if (this.current() === this.second.id) {
           return this.second;
+        } else if (this.current() === this.third.id) {
+          return this.third;
         }
       },
 
@@ -433,6 +452,22 @@
         h: 150
       },
 
+      third: {
+        id: 2,
+        first: {
+          x: 80,
+          y: 70,
+          w: 30,
+          h: 150
+        },
+        second: {
+          x: 200,
+          y: 70,
+          w: 30,
+          h: 150
+        }
+      },
+
       update() {
         if (this.current() === this.second.id) {
           if (snake.position[0].x + snake.w > this.second.x && snake.position[0].x < this.second.x + this.second.w && snake.position[0].y + snake.h > this.second.y && snake.position[0].y < this.second.y + this.second.h) {
@@ -444,6 +479,16 @@
             food.y = randomNumber(background.top.h, background.base.y - 10, 10);
           }
         }
+
+        if (this.current() === this.third.id) {
+          if (snake.position[0].x + snake.w > this.third.first.x && snake.position[0].x < this.third.first.x + this.third.first.w && snake.position[0].y + snake.h > this.third.first.y && snake.position[0].y < this.third.first.y + this.third.first.h) {
+            gameState.current = gameState.end;
+          }
+
+          if (snake.position[0].x + snake.w > this.third.second.x && snake.position[0].x < this.third.second.x + this.third.second.w && snake.position[0].y + snake.h > this.third.second.y && snake.position[0].y < this.third.second.y + this.third.second.h) {
+            gameState.current = gameState.end;
+          }
+        }
       },
 
       draw() {
@@ -451,13 +496,19 @@
           ctx.fillStyle = "white";
           ctx.fillRect(this.second.x, this.second.y, this.second.w, this.second.h);
         }
+
+        if (this.current() === this.third.id) {
+          ctx.fillStyle = "white";
+          ctx.fillRect(this.third.first.x, this.third.first.y, this.third.first.w, this.third.first.h);
+          ctx.fillRect(this.third.second.x, this.third.second.y, this.third.second.w, this.third.second.h);
+        }
       }
     }
 
     const snake = {
       position: [
-      {x: 100, y: 150},
-      {x: 110, y: 150}
+      {x: 50, y: 230},
+      {x: 60, y: 230}
       ],
 
       w: 10,
@@ -515,8 +566,8 @@
 
       restart() {
         this.position = [
-          {x: 100, y: 150},
-          {x: 110, y: 150}
+          {x: 50, y: 230},
+          {x: 60, y: 230}
           ];
       }
     }
@@ -539,8 +590,8 @@
     }
 
     function update() {
-      gameLayouts.update();
       snake.update();
+      gameLayouts.update();
     }
 
     function draw() {
