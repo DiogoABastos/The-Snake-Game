@@ -78,20 +78,38 @@ const changeState = (e) => {
       }
     }
 
-    if (position.x > buttons.x && position.x < buttons.x + buttons.w && position.y > buttons.y && position.y < buttons.y + buttons.h) {
-      if (gameState.current === gameState.layout) {
-        gameState.current = gameState.start;
-      } else if (gameState.current === gameState.start) {
-        gameState.current = gameState.game;
-      } else if (gameState.current === gameState.end) {
-        snake.restart();
-        food.restart();
-        score.restart();
-        gameState.current = gameState.start;
+    if (gameState.current === gameState.select) {
+      if (position.x > hArrow.x + hArrow.w / 2 && position.x < hArrow.x + hArrow.w && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
+        if (gamesDisplay.all()[gamesDisplay.current + 1]) {
+          gamesDisplay.current += 1;
+        }
+      }
+
+      if (position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
+        if (gamesDisplay.all()[gamesDisplay.current - 1]) {
+          gamesDisplay.current -= 1;
+        }
       }
     }
 
-    if (gameState.current === gameState.end) {
+    if (position.x > buttons.x && position.x < buttons.x + buttons.w && position.y > buttons.y && position.y < buttons.y + buttons.h) {
+      if (gamesDisplay.active() === gamesDisplay.first) {
+        if (gameState.current === gameState.select) {
+          gameState.current = gameState.layout;
+        } else if (gameState.current === gameState.layout) {
+          gameState.current = gameState.start;
+        } else if (gameState.current === gameState.start) {
+          gameState.current = gameState.game;
+        } else if (gameState.current === gameState.end) {
+          snake.restart();
+          food.restart();
+          score.restart();
+          gameState.current = gameState.start;
+        }
+      }
+    }
+
+    if (gameState.current === gameState.end && gamesDisplay.active() === gamesDisplay.first) {
       if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) {
         snake.restart();
         food.restart();
@@ -126,20 +144,42 @@ const changeState = (e) => {
       }
     }
 
-    if (position.x > buttons.x && position.x < buttons.x + buttons.w && position.y > buttons.y && position.y < buttons.y + buttons.h) {
-      if (gameState.current === gameState.layout) {
-        gameState.current = gameState.start;
-      } else if (gameState.current === gameState.start) {
-        gameState.current = gameState.game;
-      } else if (gameState.current === gameState.end) {
-        snake.restart();
-        food.restart();
-        score.restart();
-        gameState.current = gameState.start;
+    if (gameState.current === gameState.select) {
+      if (position.x > hArrow.x + hArrow.w / 2 && position.x < hArrow.x + hArrow.w && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
+        if (gamesDisplay.all()[gamesDisplay.current + 1]) {
+          gamesDisplay.current += 1;
+        }
+      }
+
+      if (position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
+        if (gamesDisplay.all()[gamesDisplay.current - 1]) {
+          gamesDisplay.current -= 1;
+        }
       }
     }
 
-    if (gameState.current === gameState.end) {
+    if (position.x > buttons.x && position.x < buttons.x + buttons.w && position.y > buttons.y && position.y < buttons.y + buttons.h) {
+      if (gamesDisplay.active() === gamesDisplay.first) {
+        if (gameState.current === gameState.select) {
+          gameState.current = gameState.layout;
+        } else if (gameState.current === gameState.layout) {
+          gameState.current = gameState.start;
+        } else if (gameState.current === gameState.start) {
+          gameState.current = gameState.game;
+        } else if (gameState.current === gameState.end) {
+          snake.restart();
+          food.restart();
+          score.restart();
+          gameState.current = gameState.start;
+        }
+      } else if (gamesDisplay.active() === gamesDisplay.second) {
+        if (gameState.current === gameState.select) {
+          gameState.current = gameState.layout;
+        }
+      }
+    }
+
+    if (gameState.current === gameState.end && gamesDisplay.active() === gamesDisplay.first) {
       if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) {
         snake.restart();
         food.restart();
@@ -157,7 +197,7 @@ const changeState = (e) => {
 
 const changeDirectionPhone = (e) => {
   e.preventDefault();
-  if (e.type === 'click') {
+  if (e.type === 'click' && gamesDisplay.active() === gamesDisplay.first) {
     let position = mousePos(canvas, e);
 
     if (!moving) {
@@ -178,7 +218,7 @@ const changeDirectionPhone = (e) => {
         snake.dy = 0;
       }
     }
-  } else if (e.type === 'touchstart') {
+  } else if (e.type === 'touchstart' && gamesDisplay.active() === gamesDisplay.first) {
    let position = touchPos(canvas, e);
 
     if (!moving) {
@@ -222,10 +262,57 @@ const clearBg = {
 
 const gameState = {
   current: 0,
-  layout: 0,
-  start: 1,
-  game: 2,
-  end: 3
+  select: 0,
+  layout: 1,
+  start: 2,
+  game: 3,
+  end: 4
+}
+
+const gamesDisplay = {
+  all() {
+    return [this.first, this.second];
+  },
+
+  current: 0,
+
+  first: {
+    id: 0,
+    x: 50,
+    y: 50,
+    tX: 60,
+    tY: 68
+  },
+
+  second: {
+    id: 1,
+    x: 120,
+    y: 50,
+    tX: 134,
+    tY: 68
+  },
+
+  w: 50,
+  h: 30,
+
+  active() {
+    return this.all()[this.current];
+  },
+
+  draw() {
+    if (gameState.current === gameState.select) {
+      ctx.fillStyle = "darkgreen";
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 5;
+      ctx.strokeRect(this.all()[this.current].x, this.all()[this.current].y, this.w, this.h);
+      ctx.fillRect(this.first.x, this.first.y, this.w, this.h);
+      ctx.fillRect(this.second.x, this.second.y, this.w, this.h);
+      ctx.fillStyle = "black";
+      ctx.font = "10px Arial";
+      ctx.fillText("Snake", this.first.tX, this.first.tY);
+      ctx.fillText("Pong", this.second.tX, this.second.tY);
+    }
+  }
 }
 
 const levelDisplay = {
@@ -263,7 +350,7 @@ const levelDisplay = {
   h: 30,
 
   draw() {
-    if (gameState.current === gameState.layout) {
+    if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.first) {
       ctx.fillStyle = "darkgreen";
       ctx.strokeStyle = "white";
       ctx.lineWidth = 5;
@@ -285,7 +372,7 @@ const chooseMessage = {
   y: 120,
 
   draw() {
-    if (gameState.current === gameState.layout) {
+    if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.first) {
       ctx.fillStyle = "black";
       ctx.font = "15px Arial";
       ctx.fillText("Choose a level", this.x, this.y);
@@ -339,7 +426,7 @@ const getReady = {
   sY: 140,
 
   draw() {
-    if (gameState.current === gameState.start) {
+    if (gameState.current === gameState.start && gamesDisplay.active() === gamesDisplay.first) {
       ctx.fillStyle = "black";
       ctx.font = '15px Arial';
       ctx.fillText('Ready?', this.x, this.y);
@@ -363,7 +450,7 @@ const gameOver = {
   },
 
   draw() {
-    if (gameState.current === gameState.end) {
+    if (gameState.current === gameState.end && gamesDisplay.active() === gamesDisplay.first) {
       ctx.fillStyle = "black";
       ctx.font = '15px Arial';
       ctx.fillText('Game Over', this.x, this.y);
@@ -482,7 +569,7 @@ const score = {
 
 
   draw() {
-    if (gameState.current === gameState.game || gameState.current === gameState.end || gameState.current === gameState.start) {
+    if (gameState.current === gameState.game || gameState.current === gameState.end || gameState.current === gameState.start && gamesDisplay.active() === gamesDisplay.first) {
       if (levelDisplay.current === this.all()[this.current()]) {
         ctx.font = '10px Arial';
         ctx.fillStyle = 'black';
@@ -534,48 +621,52 @@ const gameLayouts = {
   },
 
   update() {
-    if (this.current() === this.second.id) {
-      if (snake.position[0].x + snake.w > this.second.x && snake.position[0].x < this.second.x + this.second.w && snake.position[0].y + snake.h > this.second.y && snake.position[0].y < this.second.y + this.second.h) {
-        gameState.current = gameState.end;
+    if (gamesDisplay.active() === gamesDisplay.first) {
+      if (this.current() === this.second.id) {
+        if (snake.position[0].x + snake.w > this.second.x && snake.position[0].x < this.second.x + this.second.w && snake.position[0].y + snake.h > this.second.y && snake.position[0].y < this.second.y + this.second.h) {
+          gameState.current = gameState.end;
+        }
+
+        if (food.x + food.w > this.second.x && food.x < this.second.x + this.second.w && food.y + food.h > this.second.y && food.y < this.second.y + this.second.h) {
+          food.x = randomNumber(background.left.w, background.right.x - 10, 10);
+          food.y = randomNumber(background.top.h, background.base.y - 10, 10);
+        }
       }
 
-      if (food.x + food.w > this.second.x && food.x < this.second.x + this.second.w && food.y + food.h > this.second.y && food.y < this.second.y + this.second.h) {
-        food.x = randomNumber(background.left.w, background.right.x - 10, 10);
-        food.y = randomNumber(background.top.h, background.base.y - 10, 10);
-      }
-    }
+      if (this.current() === this.third.id) {
+        if (snake.position[0].x + snake.w > this.third.first.x && snake.position[0].x < this.third.first.x + this.third.first.w && snake.position[0].y + snake.h > this.third.first.y && snake.position[0].y < this.third.first.y + this.third.first.h) {
+          gameState.current = gameState.end;
+        }
 
-    if (this.current() === this.third.id) {
-      if (snake.position[0].x + snake.w > this.third.first.x && snake.position[0].x < this.third.first.x + this.third.first.w && snake.position[0].y + snake.h > this.third.first.y && snake.position[0].y < this.third.first.y + this.third.first.h) {
-        gameState.current = gameState.end;
-      }
+        if (snake.position[0].x + snake.w > this.third.second.x && snake.position[0].x < this.third.second.x + this.third.second.w && snake.position[0].y + snake.h > this.third.second.y && snake.position[0].y < this.third.second.y + this.third.second.h) {
+          gameState.current = gameState.end;
+        }
 
-      if (snake.position[0].x + snake.w > this.third.second.x && snake.position[0].x < this.third.second.x + this.third.second.w && snake.position[0].y + snake.h > this.third.second.y && snake.position[0].y < this.third.second.y + this.third.second.h) {
-        gameState.current = gameState.end;
-      }
+        if (food.x + food.w > this.third.first.x && food.x < this.third.first.x + this.third.first.w && food.y + food.h > this.third.first.y && food.y < this.third.first.y + this.third.first.h) {
+          food.x = randomNumber(background.left.w, background.right.x - 10, 10);
+          food.y = randomNumber(background.top.h, background.base.y - 10, 10);
+        }
 
-      if (food.x + food.w > this.third.first.x && food.x < this.third.first.x + this.third.first.w && food.y + food.h > this.third.first.y && food.y < this.third.first.y + this.third.first.h) {
-        food.x = randomNumber(background.left.w, background.right.x - 10, 10);
-        food.y = randomNumber(background.top.h, background.base.y - 10, 10);
-      }
-
-      if (food.x + food.w > this.third.second.x && food.x < this.third.second.x + this.third.second.w && food.y + food.h > this.third.second.y && food.y < this.third.second.y + this.third.second.h) {
-        food.x = randomNumber(background.left.w, background.right.x - 10, 10);
-        food.y = randomNumber(background.top.h, background.base.y - 10, 10);
+        if (food.x + food.w > this.third.second.x && food.x < this.third.second.x + this.third.second.w && food.y + food.h > this.third.second.y && food.y < this.third.second.y + this.third.second.h) {
+          food.x = randomNumber(background.left.w, background.right.x - 10, 10);
+          food.y = randomNumber(background.top.h, background.base.y - 10, 10);
+        }
       }
     }
   },
 
   draw() {
-    if (this.current() === this.second.id) {
-      ctx.fillStyle = "white";
-      ctx.fillRect(this.second.x, this.second.y, this.second.w, this.second.h);
-    }
+    if (gamesDisplay.active() === gamesDisplay.first) {
+      if (this.current() === this.second.id) {
+        ctx.fillStyle = "white";
+        ctx.fillRect(this.second.x, this.second.y, this.second.w, this.second.h);
+      }
 
-    if (this.current() === this.third.id) {
-      ctx.fillStyle = "white";
-      ctx.fillRect(this.third.first.x, this.third.first.y, this.third.first.w, this.third.first.h);
-      ctx.fillRect(this.third.second.x, this.third.second.y, this.third.second.w, this.third.second.h);
+      if (this.current() === this.third.id) {
+        ctx.fillStyle = "white";
+        ctx.fillRect(this.third.first.x, this.third.first.y, this.third.first.w, this.third.first.h);
+        ctx.fillRect(this.third.second.x, this.third.second.y, this.third.second.w, this.third.second.h);
+      }
     }
   }
 }
@@ -593,7 +684,7 @@ const snake = {
   dy: 0,
 
   update() {
-    if (gameState.current === gameState.game) {
+    if (gameState.current === gameState.game && gamesDisplay.active() === gamesDisplay.first) {
       const head = {x: this.position[0].x + this.dx, y: this.position[0].y + this.dy};
       this.position.unshift(head);
       if (food.x === this.position[0].x && food.y === this.position[0].y) {
@@ -633,10 +724,12 @@ const snake = {
   },
 
   draw() {
-    ctx.fillStyle = "white";
-    this.position.forEach((part) => {
-    ctx.fillRect(part.x, part.y, this.w - 1, this.h - 1);
-    });
+    if (gameState.current === gameState.game || gameState.current === gameState.end || gameState.current === gameState.start || gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.first) {
+      ctx.fillStyle = "white";
+      this.position.forEach((part) => {
+      ctx.fillRect(part.x, part.y, this.w - 1, this.h - 1);
+      });
+    }
   },
 
   restart() {
@@ -654,8 +747,10 @@ const food = {
   h: 10,
 
   draw() {
-    ctx.fillStyle = "red";
-    ctx.fillRect(this.x, this.y, this.w - 1, this.h - 1);
+    if (gameState.current === gameState.game || gameState.current === gameState.end || gameState.current === gameState.start || gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.first) {
+      ctx.fillStyle = "red";
+      ctx.fillRect(this.x, this.y, this.w - 1, this.h - 1);
+    }
   },
 
   restart() {
@@ -664,7 +759,15 @@ const food = {
   }
 }
 
-// space invaders
+// pong
+
+const pongDisplay = {
+  draw() {
+    if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.second) {
+      ctx.fillRect(100, 100, 50, 50);
+    }
+  }
+}
 
 
 
@@ -686,7 +789,9 @@ function draw() {
   button.draw();
   vArrow.draw();
   hArrow.draw();
+  gamesDisplay.draw();
   gameLayouts.draw();
+  pongDisplay.draw();
   chooseMessage.draw();
   food.draw();
   snake.draw();
