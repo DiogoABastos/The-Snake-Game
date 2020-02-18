@@ -106,6 +106,16 @@ const changeState = (e) => {
           score.restart();
           gameState.current = gameState.start;
         }
+      } else if (gamesDisplay.active() === gamesDisplay.second) {
+        if (gameState.current === gameState.select) {
+          gameState.current = gameState.layout;
+        } else if (gameState.current === gameState.layout) {
+          gameState.current = gameState.start;
+        } else if (gameState.current === gameState.start) {
+          gameState.current = gameState.game;
+        } else if (gameState.current === gameState.end) {
+          gameState.current = gameState.start;
+        }
       }
     }
 
@@ -242,11 +252,25 @@ const changeDirectionPhone = (e) => {
   }
 }
 
+const movePongPaddle = (e) => {
+  if (gamesDisplay.active() === gamesDisplay.second) {
+    let position = mousePos(canvas, e);
+    pongPaddle.user.y = position.y - pongPaddle.user.h / 2;
+    if (pongPaddle.user.y + pongPaddle.user.h / 2 < gameArea.y) {
+      pongPaddle.user.y = gameArea.y - pongPaddle.user.h / 2;
+    } else if (pongPaddle.user.y + pongPaddle.user.h / 2 > gameArea.h) {
+     pongPaddle.user.y = gameArea.h - pongPaddle.user.h / 2;
+    }
+
+  }
+}
+
 window.addEventListener('keydown', changeDirection);
 canvas.addEventListener('click', changeState);
 canvas.addEventListener('touchstart', changeState);
 canvas.addEventListener('click', changeDirectionPhone);
 canvas.addEventListener('touchstart', changeDirectionPhone);
+canvas.addEventListener('mousemove', movePongPaddle);
 
 const clearBg = {
   x: 0,
@@ -569,7 +593,7 @@ const score = {
 
 
   draw() {
-    if (gameState.current === gameState.game || gameState.current === gameState.end || gameState.current === gameState.start && gamesDisplay.active() === gamesDisplay.first) {
+    if ((gameState.current === gameState.game || gameState.current === gameState.end || gameState.current === gameState.start) && gamesDisplay.active() === gamesDisplay.first) {
       if (levelDisplay.current === this.all()[this.current()]) {
         ctx.font = '10px Arial';
         ctx.fillStyle = 'black';
@@ -724,7 +748,7 @@ const snake = {
   },
 
   draw() {
-    if (gameState.current === gameState.game || gameState.current === gameState.end || gameState.current === gameState.start || gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.first) {
+    if ((gameState.current === gameState.game || gameState.current === gameState.end || gameState.current === gameState.start || gameState.current === gameState.layout) && gamesDisplay.active() === gamesDisplay.first) {
       ctx.fillStyle = "white";
       this.position.forEach((part) => {
       ctx.fillRect(part.x, part.y, this.w - 1, this.h - 1);
@@ -747,7 +771,7 @@ const food = {
   h: 10,
 
   draw() {
-    if (gameState.current === gameState.game || gameState.current === gameState.end || gameState.current === gameState.start || gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.first) {
+    if ((gameState.current === gameState.game || gameState.current === gameState.end || gameState.current === gameState.start || gameState.current === gameState.layout) && gamesDisplay.active() === gamesDisplay.first) {
       ctx.fillStyle = "red";
       ctx.fillRect(this.x, this.y, this.w - 1, this.h - 1);
     }
@@ -761,44 +785,218 @@ const food = {
 
 // pong
 
-const pongDisplay = {
-  draw() {
+// const pongDisplay = {
+//   draw() {
+//     if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.second) {
+//       ctx.fillRect(100, 100, 50, 50);
+//     }
+//   }
+// }
+
+const pongPaddle = {
+  user: {
+    x: gameArea.x,
+    y: gameArea.h / 2 - 20,
+    w: 5,
+    h: 40,
+  },
+
+  c: {
+    x: gameArea.w - 5,
+    y: gameArea.h / 2 - 20,
+    w: 5,
+    h: 40,
+  },
+
+  w: 5,
+  h: 40,
+
+  update() {
     if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.second) {
-      ctx.fillRect(100, 100, 50, 50);
+      this.c.y += pongBall.y - (this.c.y + this.h / 2);
+    }
+  },
+
+  draw() {
+    if ((gameState.current === gameState.layout || gameState.current === gameState.start)&& gamesDisplay.active() === gamesDisplay.second) {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(this.user.x, this.user.y, this.w, this.h);
+      ctx.fillRect(this.c.x, this.c.y, this.w, this.h);
     }
   }
 }
 
+function collision(a, b) {
+  const aTop = a.y;
+  const aDown = a.y + a.h;
+  const aLeft = a.x;
+  const aRight = a.x + a.w;
+  const bTop = b.y - b.r;
+  const bDown = b.y + b.r;
+  const bLeft = b.x - b.r;
+  const bRight = b.x + b.r;
 
+  return aRight > bLeft && aLeft < bRight && aDown > bTop && aTop < bTop;
+}
 
+const pongBall = {
+  x: canvas.width / 2,
+  y: gameArea.h / 2,
+  r: 5,
+  dX: 5,
+  dY: -8,
+  speed: 1,
 
+  update() {
+    if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.second) {
+      this.x += this.dX;
+      this.y += this.dY;
+      if (this.y + this.r >= gameArea.h || this.y - this.r <= gameArea.y) {
+        this.dY = -this.dY;
+      }
 
+      if (collision(pongPaddle.user, this) || collision(pongPaddle.c, this)) {
+        this.speed += 0.01;
+        this.dX = -this.dX * this.speed;
+        this.dY = this.dY * this.speed;
+      }
 
+      if (this.x + this.r < gameArea.x) {
+        pongScore.c.current += 1;
+        this.reset();
+      } else if (this.x - this.r > gameArea.x + gameArea.w) {
+        pongScore.user.current += 1;
+        this.reset();
+      }
+    }
+  },
 
+  draw() {
+    if ((gameState.current === gameState.layout || gameState.current === gameState.start)&& gamesDisplay.active() === gamesDisplay.second) {
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+  },
+
+  reset() {
+    this.x = canvas.width / 2;
+    this.y = gameArea.h / 2;
+    this.r = 5;
+    this.dX = 5;
+    this.dY = -8;
+    this.speed = 1;
+  }
+}
+
+const pongNet = {
+  x: canvas.width / 2 - 1.5,
+  y: gameArea.y,
+  w: 3,
+  h: 10,
+
+  draw() {
+    if ((gameState.current === gameState.layout || gameState.current === gameState.start)&& gamesDisplay.active() === gamesDisplay.second) {
+      for (let i = 0; i < gameArea.h - gameArea.y; i += 15) {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(this.x, this.y + i, this.w, this.h);
+      }
+    }
+  }
+}
+
+const pongScore = {
+  user: {
+    current: 0,
+    x: 80,
+    y: 60
+  },
+
+  c: {
+    current: 0,
+    x: 230,
+    y: 60
+  },
+
+  update() {
+    if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.second) {
+      if (this.user.current === 5 || this.c.current === 5) {
+        gameState.current = gameState.start;
+      }
+    }
+  },
+
+  draw() {
+    if ((gameState.current === gameState.layout || gameState.current === gameState.start)&& gamesDisplay.active() === gamesDisplay.second) {
+      ctx.fillStyle = 'white';
+      ctx.font = '20px Arial';
+      ctx.fillText(this.user.current, this.user.x, this.user.y);
+      ctx.fillText(this.c.current, this.c.x, this.c.y);
+    }
+  }
+}
+
+const pongEndMessage = {
+  x: 100,
+  y: 150,
+
+  draw() {
+    if ((gameState.current === gameState.start)&& gamesDisplay.active() === gamesDisplay.second) {
+      const name = pongScore.user.current === 5 ? 'You' : 'Computer';
+      ctx.font = "20px Arial"
+      ctx.fillText(`${name} won`, this.x, this.y);
+   }
+  }
+}
 
 function update() {
+
+  // snake
   snake.update();
   gameLayouts.update();
+
+  // pong
+  pongBall.update();
+  pongPaddle.update();
+  pongScore.update();
 }
 
 function draw() {
   clearBg.draw();
+
+
+  gamesDisplay.draw();
+
+  gameLayouts.draw();
+  // pongDisplay.draw();
+  chooseMessage.draw();
+
+  // snake
+  food.draw();
+  snake.draw();
+  levelDisplay.draw();
+  score.draw();
+
+  // pong
+  pongPaddle.draw();
+  pongBall.draw();
+  pongNet.draw();
+  pongScore.draw();
+
+  // snake
+  getReady.draw();
+  gameOver.draw();
+
+  //pong
+  pongEndMessage.draw();
+
   background.draw();
   buttons.draw();
   word.draw();
   button.draw();
   vArrow.draw();
   hArrow.draw();
-  gamesDisplay.draw();
-  gameLayouts.draw();
-  pongDisplay.draw();
-  chooseMessage.draw();
-  food.draw();
-  snake.draw();
-  levelDisplay.draw();
-  score.draw();
-  getReady.draw();
-  gameOver.draw();
 }
 
 function loop() {
@@ -807,4 +1005,4 @@ function loop() {
   moving = false;
 }
 
-setInterval(loop, 100);
+setInterval(loop, 1000 / 20);
