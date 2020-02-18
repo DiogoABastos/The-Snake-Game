@@ -109,12 +109,6 @@ const changeState = (e) => {
       } else if (gamesDisplay.active() === gamesDisplay.second) {
         if (gameState.current === gameState.select) {
           gameState.current = gameState.layout;
-        } else if (gameState.current === gameState.layout) {
-          gameState.current = gameState.start;
-        } else if (gameState.current === gameState.start) {
-          gameState.current = gameState.game;
-        } else if (gameState.current === gameState.end) {
-          gameState.current = gameState.start;
         }
       }
     }
