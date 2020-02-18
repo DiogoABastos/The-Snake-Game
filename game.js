@@ -2,6 +2,8 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
 let moving = false;
+const snakeSpeed = 10;
+const pongSpeed = 50;
 
 const randomNumber = (min, max, num) => {
   return Math.floor((Math.random() * (max - min + 1) + min) / num) * num;
@@ -99,7 +101,9 @@ const changeState = (e) => {
         } else if (gameState.current === gameState.layout) {
           gameState.current = gameState.start;
         } else if (gameState.current === gameState.start) {
+          clearInterval(game);
           gameState.current = gameState.game;
+          setInterval(loop, 1000 / snakeSpeed);
         } else if (gameState.current === gameState.end) {
           snake.restart();
           food.restart();
@@ -108,7 +112,9 @@ const changeState = (e) => {
         }
       } else if (gamesDisplay.active() === gamesDisplay.second) {
         if (gameState.current === gameState.select) {
+          clearInterval(game);
           gameState.current = gameState.layout;
+          setInterval(loop, 100 / pongSpeed);
         }
       }
     }
@@ -169,7 +175,9 @@ const changeState = (e) => {
         } else if (gameState.current === gameState.layout) {
           gameState.current = gameState.start;
         } else if (gameState.current === gameState.start) {
+          clearInterval(game);
           gameState.current = gameState.game;
+          setInterval(loop, 1000 / snakeSpeed);
         } else if (gameState.current === gameState.end) {
           snake.restart();
           food.restart();
@@ -178,7 +186,9 @@ const changeState = (e) => {
         }
       } else if (gamesDisplay.active() === gamesDisplay.second) {
         if (gameState.current === gameState.select) {
+          clearInterval(game);
           gameState.current = gameState.layout;
+          setInterval(loop, 100 / pongSpeed);
         }
       }
     }
@@ -837,8 +847,8 @@ const pongBall = {
   x: canvas.width / 2,
   y: gameArea.h / 2,
   r: 5,
-  dX: 5,
-  dY: -8,
+  dX: 1,
+  dY: -1,
   speed: 1,
 
   update() {
@@ -878,8 +888,8 @@ const pongBall = {
     this.x = canvas.width / 2;
     this.y = gameArea.h / 2;
     this.r = 5;
-    this.dX = 5;
-    this.dY = -8;
+    this.dX = 1;
+    this.dY = -1;
     this.speed = 1;
   }
 }
@@ -999,4 +1009,4 @@ function loop() {
   moving = false;
 }
 
-setInterval(loop, 1000 / 20);
+let game = setInterval(loop, 1000 / 20);
