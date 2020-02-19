@@ -2,8 +2,10 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
 let moving = false;
+let gameplay;
 const snakeSpeed = 10;
 const pongSpeed = 50;
+
 
 const randomNumber = (min, max, num) => {
   return Math.floor((Math.random() * (max - min + 1) + min) / num) * num;
@@ -101,9 +103,9 @@ const changeState = (e) => {
         } else if (gameState.current === gameState.layout) {
           gameState.current = gameState.start;
         } else if (gameState.current === gameState.start) {
-          clearInterval(game);
           gameState.current = gameState.game;
-          setInterval(loop, 1000 / snakeSpeed);
+          clearInterval(gameplay);
+          game(snakeSpeed);
         } else if (gameState.current === gameState.end) {
           snake.restart();
           food.restart();
@@ -112,9 +114,15 @@ const changeState = (e) => {
         }
       } else if (gamesDisplay.active() === gamesDisplay.second) {
         if (gameState.current === gameState.select) {
-          clearInterval(game);
-          gameState.current = gameState.layout;
-          setInterval(loop, 100 / pongSpeed);
+          gameState.current = gameState.start;
+        } else if (gameState.current === gameState.start) {
+          gameState.current = gameState.game;
+          clearInterval(gameplay);
+          game(pongSpeed);
+        } else if (gameState.current === gameState.end) {
+          pongBall.reset();
+          pongScore.reset();
+          gameState.current = gameState.start;
         }
       }
     }
@@ -175,9 +183,9 @@ const changeState = (e) => {
         } else if (gameState.current === gameState.layout) {
           gameState.current = gameState.start;
         } else if (gameState.current === gameState.start) {
-          clearInterval(game);
           gameState.current = gameState.game;
-          setInterval(loop, 1000 / snakeSpeed);
+          clearInterval(gameplay);
+          game(snakeSpeed);
         } else if (gameState.current === gameState.end) {
           snake.restart();
           food.restart();
@@ -186,9 +194,15 @@ const changeState = (e) => {
         }
       } else if (gamesDisplay.active() === gamesDisplay.second) {
         if (gameState.current === gameState.select) {
-          clearInterval(game);
-          gameState.current = gameState.layout;
-          setInterval(loop, 100 / pongSpeed);
+          gameState.current = gameState.start;
+        } else if (gameState.current === gameState.start) {
+          gameState.current = gameState.game
+          clearInterval(gameplay);
+          game(pongSpeed);
+        } else if (gameState.current === gameState.end) {
+          pongBall.reset();
+          pongScore.reset();
+          gameState.current = gameState.start;
         }
       }
     }
@@ -256,16 +270,45 @@ const changeDirectionPhone = (e) => {
   }
 }
 
-const movePongPaddle = (e) => {
-  if (gamesDisplay.active() === gamesDisplay.second) {
-    let position = mousePos(canvas, e);
-    pongPaddle.user.y = position.y - pongPaddle.user.h / 2;
-    if (pongPaddle.user.y + pongPaddle.user.h / 2 < gameArea.y) {
-      pongPaddle.user.y = gameArea.y - pongPaddle.user.h / 2;
-    } else if (pongPaddle.user.y + pongPaddle.user.h / 2 > gameArea.h) {
-     pongPaddle.user.y = gameArea.h - pongPaddle.user.h / 2;
-    }
+// const movePongPaddle = (e) => {
+//   if (gamesDisplay.active() === gamesDisplay.second) {
+//     let position = mousePos(canvas, e);
+//     pongPaddle.user.y = position.y - pongPaddle.user.h / 2;
+//     if (pongPaddle.user.y + pongPaddle.user.h / 2 < gameArea.y) {
+//       pongPaddle.user.y = gameArea.y - pongPaddle.user.h / 2;
+//     } else if (pongPaddle.user.y + pongPaddle.user.h / 2 > gameArea.h) {
+//      pongPaddle.user.y = gameArea.h - pongPaddle.user.h / 2;
+//     }
 
+//   }
+// }
+
+const movePongPaddleArrows = (e) => {
+  e.preventDefault();
+  if (e.type === 'click') {
+    if (gamesDisplay.active() === gamesDisplay.second && gameState.current === gameState.game) {
+      let position = mousePos(canvas, e);
+
+      if(position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) {
+        pongPaddle.user.y -= 10;
+      }
+
+      if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) {
+        pongPaddle.user.y += 10;
+      }
+    }
+  } else if (e.type === 'touchstart') {
+    if (gamesDisplay.active() === gamesDisplay.second && gameState.current === gameState.game) {
+      let position = touchPos(canvas, e);
+
+      if(position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) {
+        pongPaddle.user.y -= 10;
+      }
+
+      if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) {
+        pongPaddle.user.y += 10;
+      }
+    }
   }
 }
 
@@ -274,7 +317,9 @@ canvas.addEventListener('click', changeState);
 canvas.addEventListener('touchstart', changeState);
 canvas.addEventListener('click', changeDirectionPhone);
 canvas.addEventListener('touchstart', changeDirectionPhone);
-canvas.addEventListener('mousemove', movePongPaddle);
+// canvas.addEventListener('mousemove', movePongPaddle);
+canvas.addEventListener('touchstart', movePongPaddleArrows);
+canvas.addEventListener('click', movePongPaddleArrows);
 
 const clearBg = {
   x: 0,
@@ -454,7 +499,8 @@ const getReady = {
   sY: 140,
 
   draw() {
-    if (gameState.current === gameState.start && gamesDisplay.active() === gamesDisplay.first) {
+    // && gamesDisplay.active() === gamesDisplay.first
+    if (gameState.current === gameState.start) {
       ctx.fillStyle = "black";
       ctx.font = '15px Arial';
       ctx.fillText('Ready?', this.x, this.y);
@@ -816,13 +862,13 @@ const pongPaddle = {
   h: 40,
 
   update() {
-    if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.second) {
+    if (gameState.current === gameState.game && gamesDisplay.active() === gamesDisplay.second) {
       this.c.y += pongBall.y - (this.c.y + this.h / 2);
     }
   },
 
   draw() {
-    if ((gameState.current === gameState.layout || gameState.current === gameState.start)&& gamesDisplay.active() === gamesDisplay.second) {
+    if ((gameState.current === gameState.start || gameState.current === gameState.game)&& gamesDisplay.active() === gamesDisplay.second) {
       ctx.fillStyle = 'white';
       ctx.fillRect(this.user.x, this.user.y, this.w, this.h);
       ctx.fillRect(this.c.x, this.c.y, this.w, this.h);
@@ -852,7 +898,7 @@ const pongBall = {
   speed: 1,
 
   update() {
-    if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.second) {
+    if (gameState.current === gameState.game && gamesDisplay.active() === gamesDisplay.second) {
       this.x += this.dX;
       this.y += this.dY;
       if (this.y + this.r >= gameArea.h || this.y - this.r <= gameArea.y) {
@@ -868,15 +914,17 @@ const pongBall = {
       if (this.x + this.r < gameArea.x) {
         pongScore.c.current += 1;
         this.reset();
+        if (pongScore.c.current !== 5) gameState.current = gameState.start;
       } else if (this.x - this.r > gameArea.x + gameArea.w) {
         pongScore.user.current += 1;
         this.reset();
+        if (pongScore.user.current !== 5) gameState.current = gameState.start;
       }
     }
   },
 
   draw() {
-    if ((gameState.current === gameState.layout || gameState.current === gameState.start)&& gamesDisplay.active() === gamesDisplay.second) {
+    if ((gameState.current === gameState.start || gameState.current === gameState.game)&& gamesDisplay.active() === gamesDisplay.second) {
       ctx.fillStyle = 'white';
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
@@ -901,7 +949,7 @@ const pongNet = {
   h: 10,
 
   draw() {
-    if ((gameState.current === gameState.layout || gameState.current === gameState.start)&& gamesDisplay.active() === gamesDisplay.second) {
+    if ((gameState.current === gameState.start || gameState.current === gameState.game)&& gamesDisplay.active() === gamesDisplay.second) {
       for (let i = 0; i < gameArea.h - gameArea.y; i += 15) {
         ctx.fillStyle = 'white';
         ctx.fillRect(this.x, this.y + i, this.w, this.h);
@@ -924,20 +972,25 @@ const pongScore = {
   },
 
   update() {
-    if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.second) {
+    if (gameState.current === gameState.game && gamesDisplay.active() === gamesDisplay.second) {
       if (this.user.current === 5 || this.c.current === 5) {
-        gameState.current = gameState.start;
+        gameState.current = gameState.end;
       }
     }
   },
 
   draw() {
-    if ((gameState.current === gameState.layout || gameState.current === gameState.start)&& gamesDisplay.active() === gamesDisplay.second) {
+    if ((gameState.current === gameState.start || gameState.current === gameState.game)&& gamesDisplay.active() === gamesDisplay.second) {
       ctx.fillStyle = 'white';
       ctx.font = '20px Arial';
       ctx.fillText(this.user.current, this.user.x, this.user.y);
       ctx.fillText(this.c.current, this.c.x, this.c.y);
     }
+  },
+
+  reset() {
+    this.user.current = 0;
+    this.c.current = 0;
   }
 }
 
@@ -946,9 +999,10 @@ const pongEndMessage = {
   y: 150,
 
   draw() {
-    if ((gameState.current === gameState.start)&& gamesDisplay.active() === gamesDisplay.second) {
+    if ((gameState.current === gameState.end) && gamesDisplay.active() === gamesDisplay.second) {
       const name = pongScore.user.current === 5 ? 'You' : 'Computer';
-      ctx.font = "20px Arial"
+      ctx.font = "20px Arial";
+      ctx.fillStyle = "black";
       ctx.fillText(`${name} won`, this.x, this.y);
    }
   }
@@ -987,13 +1041,13 @@ function draw() {
   pongBall.draw();
   pongNet.draw();
   pongScore.draw();
+  pongEndMessage.draw();
 
   // snake
   getReady.draw();
   gameOver.draw();
 
   //pong
-  pongEndMessage.draw();
 
   background.draw();
   buttons.draw();
@@ -1009,4 +1063,8 @@ function loop() {
   moving = false;
 }
 
-let game = setInterval(loop, 1000 / 20);
+const game = (speed) => {
+  gameplay = setInterval(loop, 1000 / speed);
+}
+
+game(20);
