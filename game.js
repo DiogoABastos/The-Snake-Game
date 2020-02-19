@@ -164,8 +164,8 @@ const changeState = (e) => {
         gameState.current = gameState.layout;
       }
     }
-  } else if (e.type === 'touchstart') {
-   let position = touchPos(canvas, e);
+  }   if (e.type === 'touchstart') {
+    let position = touchPos(canvas, e);
 
     // if (position.x > levelDisplay.first.x && position.x < levelDisplay.first.x + levelDisplay.w && position.y > levelDisplay.first.y && position.y < levelDisplay.first.y + levelDisplay.h) {
     //   if (gameState.current === gameState.layout) {
@@ -177,11 +177,19 @@ const changeState = (e) => {
         if (levelDisplay.all()[levelDisplay.current + 1]) {
           levelDisplay.current += 1;
         }
+
+        if (pongLevel.all()[pongLevel.current + 1]) {
+          pongLevel.current += 1;
+        }
       }
 
       if (position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
         if (levelDisplay.all()[levelDisplay.current - 1]) {
           levelDisplay.current -= 1;
+        }
+
+        if (pongLevel.all()[pongLevel.current - 1]) {
+          pongLevel.current -= 1;
         }
       }
     }
@@ -218,9 +226,11 @@ const changeState = (e) => {
         }
       } else if (gamesDisplay.active() === gamesDisplay.second) {
         if (gameState.current === gameState.select) {
+          gameState.current = gameState.layout;
+        } else if (gameState.current === gameState.layout) {
           gameState.current = gameState.start;
         } else if (gameState.current === gameState.start) {
-          gameState.current = gameState.game
+          gameState.current = gameState.game;
           clearInterval(gameplay);
           game(pongSpeed);
         } else if (gameState.current === gameState.end) {
