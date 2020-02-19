@@ -73,11 +73,19 @@ const changeState = (e) => {
         if (levelDisplay.all()[levelDisplay.current + 1]) {
           levelDisplay.current += 1;
         }
+
+        if (pongLevel.all()[pongLevel.current + 1]) {
+          pongLevel.current += 1;
+        }
       }
 
       if (position.x > hArrow.x && position.x < hArrow.x + hArrow.w / 2 && position.y > hArrow.y && position.y < hArrow.y + hArrow.h) {
         if (levelDisplay.all()[levelDisplay.current - 1]) {
           levelDisplay.current -= 1;
+        }
+
+        if (pongLevel.all()[pongLevel.current - 1]) {
+          pongLevel.current -= 1;
         }
       }
     }
@@ -114,6 +122,8 @@ const changeState = (e) => {
         }
       } else if (gamesDisplay.active() === gamesDisplay.second) {
         if (gameState.current === gameState.select) {
+          gameState.current = gameState.layout;
+        } else if (gameState.current === gameState.layout) {
           gameState.current = gameState.start;
         } else if (gameState.current === gameState.start) {
           gameState.current = gameState.game;
@@ -137,6 +147,20 @@ const changeState = (e) => {
         snake.restart();
         food.restart();
         score.restart();
+        gameState.current = gameState.layout;
+      }
+    }
+
+    if (gameState.current === gameState.end && gamesDisplay.active() === gamesDisplay.second) {
+      if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) {
+        pongPaddle.reset();
+        pongBall.reset();
+        pongScore.reset();
+        gameState.current = gameState.start;
+      } else if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) {
+        pongPaddle.reset();
+        pongBall.reset();
+        pongScore.reset();
         gameState.current = gameState.layout;
       }
     }
@@ -220,6 +244,20 @@ const changeState = (e) => {
         gameState.current = gameState.layout;
       }
     }
+
+    if (gameState.current === gameState.end && gamesDisplay.active() === gamesDisplay.second) {
+      if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) {
+        pongPaddle.reset();
+        pongBall.reset();
+        pongScore.reset();
+        gameState.current = gameState.start;
+      } else if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) {
+        pongPaddle.reset();
+        pongBall.reset();
+        pongScore.reset();
+        gameState.current = gameState.layout;
+      }
+    }
   }
 }
 
@@ -290,11 +328,17 @@ const movePongPaddleArrows = (e) => {
       let position = mousePos(canvas, e);
 
       if(position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) {
-        pongPaddle.user.y -= 10;
+        pongPaddle.user.y -= pongBall.speed * 20;
       }
 
       if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) {
-        pongPaddle.user.y += 10;
+        pongPaddle.user.y += pongBall.speed * 20;
+      }
+
+      if (pongPaddle.user.y + pongPaddle.user.h / 2 < gameArea.y) {
+        pongPaddle.user.y = gameArea.y - pongPaddle.user.h / 2;
+      } else if (pongPaddle.user.y + pongPaddle.user.h / 2 > gameArea.h) {
+        pongPaddle.user.y = gameArea.h - pongPaddle.user.h / 2;
       }
     }
   } else if (e.type === 'touchstart') {
@@ -302,11 +346,17 @@ const movePongPaddleArrows = (e) => {
       let position = touchPos(canvas, e);
 
       if(position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > vArrow.y && position.y < vArrow.y + vArrow.h / 2) {
-        pongPaddle.user.y -= 10;
+        pongPaddle.user.y -= pongBall.speed * 15;
       }
 
       if (position.x > vArrow.x && position.x < vArrow.x + vArrow.w && position.y > (vArrow.y + vArrow.h / 2) && position.y < vArrow.y + vArrow.h) {
-        pongPaddle.user.y += 10;
+        pongPaddle.user.y += pongBall.speed * 15;
+      }
+
+      if (pongPaddle.user.y + pongPaddle.user.h / 2 < gameArea.y) {
+        pongPaddle.user.y = gameArea.y - pongPaddle.user.h / 2;
+      } else if (pongPaddle.user.y + pongPaddle.user.h / 2 > gameArea.h) {
+        pongPaddle.user.y = gameArea.h - pongPaddle.user.h / 2;
       }
     }
   }
@@ -445,7 +495,7 @@ const chooseMessage = {
   y: 120,
 
   draw() {
-    if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.first) {
+    if (gameState.current === gameState.layout) {
       ctx.fillStyle = "black";
       ctx.font = "15px Arial";
       ctx.fillText("Choose a level", this.x, this.y);
@@ -550,25 +600,25 @@ const button = {
 
 const vArrow = {
   x: 205,
-  y: 300,
+  y: 300 - 20,
   w: 30,
-  h: 100,
+  h: 100 + 40,
 
   draw() {
     ctx.fillStyle = 'darkgrey';
-    ctx.fillRect(this.x, this.y, this.w, this.h);
+    ctx.fillRect(this.x, this.y + 20, this.w, this.h - 40);
   }
 }
 
 const hArrow = {
-  x: 170,
+  x: 170 - 20,
   y: 335,
-  w: 100,
+  w: 100 + 40,
   h: 30,
 
   draw() {
     ctx.fillStyle = 'darkgrey';
-    ctx.fillRect(this.x, this.y, this.w, this.h);
+    ctx.fillRect(this.x + 20, this.y, this.w - 40, this.h);
   }
 }
 
@@ -835,13 +885,61 @@ const food = {
 
 // pong
 
-// const pongDisplay = {
-//   draw() {
-//     if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.second) {
-//       ctx.fillRect(100, 100, 50, 50);
-//     }
-//   }
-// }
+const pongLevel = {
+  all() {
+    return [this.first, this.second, this.third];
+  },
+
+  current: 0,
+
+  first: {
+    id: 0,
+    x: 50,
+    y: 50,
+    tX: 65,
+    tY: 68
+  },
+
+  second: {
+    id: 1,
+    x: 120,
+    y: 50,
+    tX: 128,
+    tY: 68
+  },
+
+  third: {
+    id: 2,
+    x: 190,
+    y: 50,
+    tX: 205,
+    tY: 68
+  },
+
+  w: 50,
+  h: 30,
+
+  active() {
+    return this.all()[this.current];
+  },
+
+  draw() {
+    if (gameState.current === gameState.layout && gamesDisplay.active() === gamesDisplay.second) {
+      ctx.fillStyle = "darkgreen";
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 5;
+      ctx.strokeRect(this.all()[this.current].x, this.all()[this.current].y, this.w, this.h);
+      ctx.fillRect(this.first.x, this.first.y, this.w, this.h);
+      ctx.fillRect(this.second.x, this.second.y, this.w, this.h);
+      ctx.fillRect(this.third.x, this.third.y, this.w, this.h);
+      ctx.fillStyle = "black";
+      ctx.font = "10px Arial";
+      ctx.fillText("Easy", this.first.tX, this.first.tY);
+      ctx.fillText("Medium", this.second.tX, this.second.tY);
+      ctx.fillText("Hard", this.third.tX, this.third.tY);
+    }
+  }
+}
 
 const pongPaddle = {
   user: {
@@ -873,6 +971,22 @@ const pongPaddle = {
       ctx.fillRect(this.user.x, this.user.y, this.w, this.h);
       ctx.fillRect(this.c.x, this.c.y, this.w, this.h);
     }
+  },
+
+  reset() {
+    this.user = {
+      x: gameArea.x,
+      y: gameArea.h / 2 - 20,
+      w: 5,
+      h: 40,
+    };
+
+    this.c = {
+      x: gameArea.w - 5,
+      y: gameArea.h / 2 - 20,
+      w: 5,
+      h: 40,
+    };
   }
 }
 
@@ -893,31 +1007,37 @@ const pongBall = {
   x: canvas.width / 2,
   y: gameArea.h / 2,
   r: 5,
-  dX: 1,
-  dY: -1,
+  dX: [1, 2, 3],
+
+  dY: [-1, -2, -3],
+
   speed: 1,
 
   update() {
     if (gameState.current === gameState.game && gamesDisplay.active() === gamesDisplay.second) {
-      this.x += this.dX;
-      this.y += this.dY;
+
+      this.x += this.dX[pongLevel.current];
+      this.y += this.dY[pongLevel.current];
+
       if (this.y + this.r >= gameArea.h || this.y - this.r <= gameArea.y) {
-        this.dY = -this.dY;
+        this.dY[pongLevel.current] = -this.dY[pongLevel.current];
       }
 
       if (collision(pongPaddle.user, this) || collision(pongPaddle.c, this)) {
         this.speed += 0.01;
-        this.dX = -this.dX * this.speed;
-        this.dY = this.dY * this.speed;
+        this.dX[pongLevel.current] = -this.dX[pongLevel.current] * this.speed;
+        this.dY[pongLevel.current] = this.dY[pongLevel.current] * this.speed;
       }
 
       if (this.x + this.r < gameArea.x) {
         pongScore.c.current += 1;
         this.reset();
+        pongPaddle.reset();
         if (pongScore.c.current !== 5) gameState.current = gameState.start;
       } else if (this.x - this.r > gameArea.x + gameArea.w) {
         pongScore.user.current += 1;
         this.reset();
+        pongPaddle.reset();
         if (pongScore.user.current !== 5) gameState.current = gameState.start;
       }
     }
@@ -936,8 +1056,8 @@ const pongBall = {
     this.x = canvas.width / 2;
     this.y = gameArea.h / 2;
     this.r = 5;
-    this.dX = 1;
-    this.dY = -1;
+    this.dX = [1, 2, 3];
+    this.dY = [-1, -2, -3];
     this.speed = 1;
   }
 }
@@ -995,8 +1115,18 @@ const pongScore = {
 }
 
 const pongEndMessage = {
-  x: 100,
-  y: 150,
+  x: 90,
+  y: 120,
+
+  layout: {
+    x: 130,
+    y: 150
+  },
+
+  again: {
+    x: 130,
+    y: 180
+  },
 
   draw() {
     if ((gameState.current === gameState.end) && gamesDisplay.active() === gamesDisplay.second) {
@@ -1004,6 +1134,9 @@ const pongEndMessage = {
       ctx.font = "20px Arial";
       ctx.fillStyle = "black";
       ctx.fillText(`${name} won`, this.x, this.y);
+      ctx.font = '10px Arial';
+      ctx.fillText('Levels (Up)', this.layout.x, this.layout.y);
+      ctx.fillText('Again (Down)', this.again.x, this.again.y);
    }
   }
 }
@@ -1027,7 +1160,6 @@ function draw() {
   gamesDisplay.draw();
 
   gameLayouts.draw();
-  // pongDisplay.draw();
   chooseMessage.draw();
 
   // snake
@@ -1035,6 +1167,10 @@ function draw() {
   snake.draw();
   levelDisplay.draw();
   score.draw();
+
+  // pong
+  pongLevel.draw();
+
 
   // pong
   pongPaddle.draw();
